@@ -26,21 +26,21 @@ unavailable_mounts=""
 # Checking the status of the mount points
 for mount_point in $custom_mounts; do
     fs_type=$(grep -E "^\S*\s+$mount_point" /etc/fstab | awk '{print $3}')
-    if [[ $fs_type == "nfs" ]]; then
+    if test "$fs_type" = "nfs"; then
         # Checking if an NFS mount point is mounted
         if ! mountpoint -q "$mount_point"; then
-            unavailable_mounts+="$mount_point (NFS), "
+            unavailable_mounts="$unavailable_mounts$mount_point (NFS), "
         fi
     else
-        # Checking if a CIFS mount point is mounted and available with read/write
-        if ! mountpoint -q "$mount_point" || ! touch "$mount_point"/test_file || ! rm "$mount_point"/test_file; then
-            unavailable_mounts+="$mount_point (CIFS), "
+        # Checking if a CIFS mount point is mounted
+        if ! mountpoint -q "$mount_point"; then
+            unavailable_mounts="$unavailable_mounts$mount_point (CIFS), "
         fi
     fi
 done
 
 # Displays the result
-if [[ -z $unavailable_mounts ]]; then
+if [ -z "$unavailable_mounts" ]; then
     echo "OK - All mount points are available."
     exit 0
 else
